@@ -92,10 +92,7 @@ static NSMutableDictionary * AFKeychainQueryDictionaryWithIdentifier(NSString *i
 {
     // See http://tools.ietf.org/html/rfc6749#section-7.1
     if ([[type lowercaseString] isEqualToString:@"bearer"]) {
-        AFHTTPRequestSerializer *serializer = [AFHTTPRequestSerializer serializer];
-        [serializer setValue:[NSString stringWithFormat:@"Bearer %@", token] forHTTPHeaderField:@"Authorization"];
-        self.requestSerializer = serializer;
-        
+        [self.requestSerializer setValue:[NSString stringWithFormat:@"Bearer %@", token] forHTTPHeaderField:@"Authorization"];
     }
 }
 
@@ -170,9 +167,10 @@ static NSMutableDictionary * AFKeychainQueryDictionaryWithIdentifier(NSString *i
     [mutableParameters setValue:self.secret forKey:@"client_secret"];
     parameters = [NSDictionary dictionaryWithDictionary:mutableParameters];
     
-    self.requestSerializer = [AFHTTPRequestSerializer serializer];
+    [self.requestSerializer clearAuthorizationHeader];
     
-    NSMutableURLRequest *mutableRequest = [self.requestSerializer requestWithMethod:@"POST" URLString:urlString parameters:parameters];
+    NSError *error = nil;
+    NSMutableURLRequest *mutableRequest = [self.requestSerializer requestWithMethod:@"POST" URLString:urlString parameters:parameters error:&error];
     [mutableRequest setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     AFHTTPRequestOperation *requestOperation = [self HTTPRequestOperationWithRequest:mutableRequest success:^(AFHTTPRequestOperation *operation, id responseObject) {
         if ([responseObject valueForKey:@"error"]) {
